@@ -66,5 +66,5 @@ jobs:
 #          platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ghcr.io/${{ github.actor }}/rust-builder:${{ steps.rust_version.outputs.version }}
-            ghcr.io/${{ github.actor }}/rust-builder:latest
+            ghcr.io/${{ github.repository }}:${{ steps.rust_version.outputs.version }}
+            ghcr.io/${{ github.repository }}:latest
