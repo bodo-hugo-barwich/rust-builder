@@ -32,3 +32,17 @@ jobs:
         run: |
           echo "Build the Docker Image"
           docker build -t rust_builder .
+
+      # Show Environment and Compiler Version
+      - name: Show Environment and Compiler Version
+        run: | 
+          rust_version=`docker run -t rust bash -c "rustc --version"`
+          echo "* Operating System:" && docker run -t rust_builder cat /etc/os-release
+          echo "* Rust Compiler Version: $rust_version"
+          echo "* RustUp Version:" && docker run -t rust bash -c "rustup --version"
+          echo "* RustUp Show:" && docker run -t rust bash -c "rustup show"
+          echo "* RustUp Toolchains Installed:" && docker run -t rust bash -c "rustup toolchain list"
+          echo "* RustUp Components Installed:" && docker run -t rust bash -c "rustup component list --installed"
+          echo "* RustUp Components Help:" && docker run -t rust bash -c "rustup component --help"
+          if [ -z "$RUST_VERSION" ]; then echo "Rust Installation failed!"; exit 1; fi;
+          
