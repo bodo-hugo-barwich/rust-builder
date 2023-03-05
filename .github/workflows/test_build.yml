@@ -1,0 +1,48 @@
+name: Build Test
+
+on:
+  pull_request:
+    # Pull Request events on master branch
+    branches: [ master ]
+  workflow_dispatch:
+     branches: [ master ]    
+
+jobs:
+  build-test:
+    runs-on: ubuntu-20.04
+
+    steps:
+       # List all installed Docker Libraries
+      - name: List all installed Docker Libraries
+        run: |
+          dpkg --get-selections | grep -i docker | sort
+       # List all available Docker Libraries
+      - name: List all available Docker Libraries
+        run: |
+          sudo apt-get update 
+          sudo apt-cache search docker | sort
+        
+      - uses: actions/checkout@v2
+        
+      - name: Listing Directory Contents
+        run: pwd && ls -lah
+        
+      # Test the Docker Image Build
+      - name: Build the Image
+        run: |
+          echo "Build the Docker Image"
+          docker build -t rust_builder .
+
+      # Show Environment and Compiler Version
+      - name: Show Environment and Compiler Version
+        run: | 
+          rust_version=`docker run -t rust_builder bash -c "rustc --version"`
+          echo "* Operating System:" && docker run -t rust_builder cat /etc/os-release
+          echo "* Rust Compiler Version: $rust_version"
+          echo "* RustUp Version:" && docker run -t rust_builder bash -c "rustup --version"
+          echo "* RustUp Show:" && docker run -t rust_builder bash -c "rustup show"
+          echo "* RustUp Toolchains Installed:" && docker run -t rust_builder bash -c "rustup toolchain list"
+          echo "* RustUp Components Installed:" && docker run -t rust_builder bash -c "rustup component list --installed"
+          echo "* RustUp Components Help:" && docker run -t rust_builder bash -c "rustup component --help"
+          if [ -z "$rust_version" ]; then echo "Rust Installation failed!"; exit 1; fi;
+          
