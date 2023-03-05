@@ -44,5 +44,5 @@ jobs:
           echo "* RustUp Toolchains Installed:" && docker run -t rust_builder bash -c "rustup toolchain list"
           echo "* RustUp Components Installed:" && docker run -t rust_builder bash -c "rustup component list --installed"
           echo "* RustUp Components Help:" && docker run -t rust_builder bash -c "rustup component --help"
-          if [ -z "$RUST_VERSION" ]; then echo "Rust Installation failed!"; exit 1; fi;
+          if [ -z "$rust_version" ]; then echo "Rust Installation failed!"; exit 1; fi;
           
