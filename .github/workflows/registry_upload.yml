@@ -40,7 +40,7 @@ jobs:
       - name: Show Compiler Version
         id: rust_version
         run: | 
-          rust_version_info=`docker run -t rust bash -c "rustc --version"`          
+          rust_version_info=`docker run -t rust_builder bash -c "rustc --version"`          
           rust_version=`echo "$rust_version_info" | cut -d' ' -f1`
           echo "* Rust Compiler Version:" 
           echo "$rust_version_info | $rust_version"
