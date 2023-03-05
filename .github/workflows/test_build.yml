@@ -3,20 +3,14 @@ name: Build Test
 on:
   pull_request:
     # Pull Request events on master branch
-    branches: 
-      - master
+    branches: [ master ]
   workflow_dispatch:
-     branches:    
-      - master  
+     branches: [ master ]    
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # Configure and Run the Testing Job
-  plack-test:
-    # The type of runner that the job will run on
+  build-test:
     runs-on: ubuntu-20.04
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
        # List all installed Docker Libraries
       - name: List all installed Docker Libraries
@@ -28,7 +22,6 @@ jobs:
           sudo apt-get update 
           sudo apt-cache search docker | sort
         
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
         
       - name: Listing Directory Contents
