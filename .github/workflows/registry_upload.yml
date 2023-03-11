@@ -48,7 +48,7 @@ jobs:
 
       # Show Compiler Version
       - name: Set Compiler Version Tag
-        id: rust_version
+        id: image_tag
         run: | 
           echo "rustc ver: '${{ steps.rust_version.outputs.version }}'"
           docker tag rust_builder rust_builder:${{ steps.rust_version.outputs.version }}
