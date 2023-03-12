@@ -60,7 +60,7 @@ jobs:
           images: ghcr.io/${{ github.repository }}
       
 #      - name: Login to DockerHub
-#        uses: docker/login-action@v1 
+#        uses: docker/login-action@v2.1.0
 #        with:
 #          username: ${{ secrets.DOCKERHUB_USERNAME }}
 #          password: ${{ secrets.DOCKERHUB_TOKEN }}
@@ -78,5 +78,5 @@ jobs:
           context: .
 #          platforms: linux/amd64,linux/arm64
           push: true
-          tags: [ ${{ steps.image_meta.outputs.tags }}, "ghcr.io/${{ github.repository }}:${{ steps.rust_version.outputs.version }}" ]
+          tags: ${{ steps.image_meta.outputs.tags }}, "ghcr.io/${{ github.repository }}:${{ steps.rust_version.outputs.version }}"
           labels: ${{ steps.image_meta.outputs.labels }}          
