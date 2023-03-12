@@ -57,7 +57,7 @@ jobs:
         id: image_meta
         uses: docker/metadata-action@v4.3.0
         with:
-          images: ghcr.io/${{ github.repository }}
+          images: rust_builder
 
       # Show Compiler Version
       - name: Show Image Tags and Labels
