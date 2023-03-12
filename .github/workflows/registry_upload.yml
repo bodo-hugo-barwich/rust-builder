@@ -58,6 +58,9 @@ jobs:
         uses: docker/metadata-action@v4.3.0
         with:
           images: rust_builder
+          tags: |
+            # use custom value instead of git tag
+            type=semver,pattern={{version}},value=v${{ steps.rust_version.outputs.version }}
 
       # Show Compiler Version
       - name: Show Image Tags and Labels
@@ -81,10 +84,13 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: Push the Image to the Repository
-        run: |
-          docker tag rust_builder:latest ghcr.io/${{ github.repository }}:latest
-          docker push ghcr.io/${{ github.repository }}:latest
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4.0.0
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.image_meta.outputs.tags }}
+          labels: ${{ steps.image_meta.outputs.labels }}      
 
           
