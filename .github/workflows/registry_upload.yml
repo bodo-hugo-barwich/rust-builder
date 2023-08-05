@@ -68,6 +68,7 @@ jobs:
           echo "tag=$tag_label" >> $GITHUB_OUTPUT
           echo "exists=$tag_exists" >> $GITHUB_OUTPUT
         
+        # Version file might exist on retry
       - name: Tag the Repository with Rust Version Tag
         id: git_tag_set
         if: steps.git_tag.outputs.exists == 0
@@ -86,7 +87,7 @@ jobs:
           git commit -m "Added new Rust Compiler Version: ${{ steps.rust_version.outputs.version }}"
           echo "Show commit on 'master':"
           git show
-          git push
+          git push || true
           git tag -a "${{ steps.git_tag.outputs.tag }}" -m "Update Image '${{ steps.git_tag.outputs.tag }}' with Rust Compiler Version: ${{ steps.package_version.outputs.version_info }} "
           git push origin ${{ steps.git_tag.outputs.tag }}
 
@@ -108,7 +109,7 @@ jobs:
             # use custom value instead of git tag
             type=semver,pattern={{version}},value=v${{ steps.rust_version.outputs.version }}
 
-      # Show Compiler Version
+      # Show Image Meta Data
       - name: Show Image Tags and Labels
         if: steps.git_tag.outputs.exists == 0
         run: | 
@@ -118,12 +119,6 @@ jobs:
           echo "${{ steps.image_meta.outputs.labels }}"
           echo "* Image Inspection:" 
           docker inspect rust_builder
-      
-#      - name: Login to DockerHub
-#        uses: docker/login-action@v2.1.0
-#        with:
-#          username: ${{ secrets.DOCKERHUB_USERNAME }}
-#          password: ${{ secrets.DOCKERHUB_TOKEN }}
       
       - name: Login to GitHub Container Registry
         if: steps.git_tag.outputs.exists == 0
