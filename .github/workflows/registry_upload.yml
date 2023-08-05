@@ -58,7 +58,7 @@ jobs:
         run: |
           git fetch --tags
           tag_label=`git tag -l "v${{ steps.rust_version.outputs.version }}"`
-          if [ -z $tag_label ]; then tag_exists=0; else tag_exists=1; fi;
+          if [ -z $tag_label ]; then tag_label="v${{ steps.rust_version.outputs.version }}"; tag_exists=0; else tag_exists=1; fi;
           echo "git - tag: '$tag_label'; exists: '$tag_exists'"
           echo "tag=$tag_label" >> $GITHUB_OUTPUT
           echo "exists=$tag_exists" >> $GITHUB_OUTPUT
@@ -70,7 +70,7 @@ jobs:
           echo "git - tag: '${{ steps.git_tag.outputs.tag }}'; exists: '${{ steps.git_tag.outputs.exists }}'"
           echo "git - commit: '${{ steps.package_version.outputs.version_commit }}'"
           git checkout master
-          author_res=`git log -1 | grep -i author | sed -re 's/^[^:]+: ([^<]*) <([^>]+)>.*/\1|\2/i'`
+          author_res=`git log -1 | grep -i author | sed -re 's/^[^:]+: ([^<]+) <([^>]+)>.*/\1|\2/i'`
           echo -e "Commit Author:\n$author_res"
           if [ -z "$author_res" ]; then echo "could not find GIT VERSION COMMIT"; exit 1; fi;
           author_user=`echo "$author_res" | cut -d"|" -f1`
@@ -79,6 +79,7 @@ jobs:
           git config user.email "$author_email"
           git add VERSION
           git commit -m "Added new Rust Compiler Version: ${{ steps.rust_version.outputs.version }}"
+          echo "Show commit on 'master':"
           git show
           git tag -a "${{ steps.git_tag.outputs.tag }}" -m "Update Image '${{ steps.git_tag.outputs.tag }}' with Rust Compiler Version: ${{ steps.package_version.outputs.version_info }} "
           git push origin ${{ steps.git_tag.outputs.tag }}
@@ -86,12 +87,14 @@ jobs:
       # Show Compiler Version
       - name: Set Compiler Version Tag
         id: image_tag
+        if: steps.git_tag.outputs.exists == 0
         run: | 
           echo "rustc ver: '${{ steps.rust_version.outputs.version }}'"
           docker tag rust_builder rust_builder:${{ steps.git_tag.outputs.tag }}
 
       - name: Extract metadata (tags, labels) for Docker
         id: image_meta
+        if: steps.git_tag.outputs.exists == 0
         uses: docker/metadata-action@v4.3.0
         with:
           images: ghcr.io/${{ github.repository }}
@@ -101,6 +104,7 @@ jobs:
 
       # Show Compiler Version
       - name: Show Image Tags and Labels
+        if: steps.git_tag.outputs.exists == 0
         run: | 
           echo "* Image Tags:" 
           echo "${{ steps.image_meta.outputs.tags }}"
@@ -116,6 +120,7 @@ jobs:
 #          password: ${{ secrets.DOCKERHUB_TOKEN }}
       
       - name: Login to GitHub Container Registry
+        if: steps.git_tag.outputs.exists == 0
         uses: docker/login-action@v2.1.0 
         with:
           registry: ghcr.io
@@ -123,6 +128,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push Docker image
+        if: steps.git_tag.outputs.exists == 0
         uses: docker/build-push-action@v4.0.0
         with:
           context: .
