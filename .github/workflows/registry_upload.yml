@@ -20,6 +20,12 @@ jobs:
       - name: Check for Manual Launch 
         if: github.event_name == 'workflow_dispatch'
         run: echo "Event '${{ github.event_name }}' - Manual Push to Registry" 
+
+      - name: Install Git Tools
+        run: | 
+          perl --version
+          sudo apt-get update 
+          sudo apt-get -y install git cpanminus
       
       - name: Checkout
         uses: actions/checkout@v2
@@ -42,22 +48,53 @@ jobs:
         run: | 
           rust_version_info=`docker run -t rust_builder bash -c "rustc --version"`          
           rust_version=`echo "$rust_version_info" | awk '{print $2}'`
-          echo "* Rust Compiler Version:" 
-          echo "$rust_version_info | $rust_version"
+          echo "* Rust Compiler Version:" | tee > VERSION
+          echo "$rust_version | $rust_version_info" | tee >> VERSION
+          echo "version_info=$rust_version_info" >> $GITHUB_OUTPUT
           echo "version=$rust_version" >> $GITHUB_OUTPUT
+          
+      - name: Check Repository for Rust Version Tag
+        id: git_tag
+        run: |
+          git fetch --tags
+          tag_label=`git tag -l "v${{ steps.rust_version.outputs.version }}"`
+          if [ -z $tag_label ]; then tag_exists=0; else tag_exists=1; fi;
+          echo "git - tag: '$tag_label'; exists: '$tag_exists'"
+          echo "tag=$tag_label" >> $GITHUB_OUTPUT
+          echo "exists=$tag_exists" >> $GITHUB_OUTPUT
+        
+      - name: Tag the Repository with Package Version Tag
+        id: git_tag_set
+        if: steps.git_tag.outputs.exists == 0
+        run: |
+          echo "git - tag: '${{ steps.git_tag.outputs.tag }}'; exists: '${{ steps.git_tag.outputs.exists }}'"
+          echo "git - commit: '${{ steps.package_version.outputs.version_commit }}'"
+          git checkout master
+          author_res=`git log -1 | grep -i author | sed -re 's/^[^:]+: ([^<]*) <([^>]+)>.*/\1|\2/i'`
+          echo -e "Commit Author:\n$author_res"
+          if [ -z "$author_res" ]; then echo "could not find GIT VERSION COMMIT"; exit 1; fi;
+          author_user=`echo "$author_res" | cut -d"|" -f1`
+          author_email=`echo "$author_res" | cut -d"|" -f2`
+          git config user.name "$author_user"
+          git config user.email "$author_email"
+          git add VERSION
+          git commit -m "Added new Rust Compiler Version: ${{ steps.rust_version.outputs.version }}"
+          git show
+          git tag -a "${{ steps.git_tag.outputs.tag }}" -m "Update Image '${{ steps.git_tag.outputs.tag }}' with Rust Compiler Version: ${{ steps.package_version.outputs.version_info }} "
+          git push origin ${{ steps.git_tag.outputs.tag }}
 
       # Show Compiler Version
       - name: Set Compiler Version Tag
         id: image_tag
         run: | 
           echo "rustc ver: '${{ steps.rust_version.outputs.version }}'"
-          docker tag rust_builder rust_builder:${{ steps.rust_version.outputs.version }}
+          docker tag rust_builder rust_builder:${{ steps.git_tag.outputs.tag }}
 
       - name: Extract metadata (tags, labels) for Docker
         id: image_meta
         uses: docker/metadata-action@v4.3.0
         with:
-          images: rust_builder
+          images: ghcr.io/${{ github.repository }}
           tags: |
             # use custom value instead of git tag
             type=semver,pattern={{version}},value=v${{ steps.rust_version.outputs.version }}
