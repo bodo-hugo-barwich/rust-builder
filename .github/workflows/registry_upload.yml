@@ -84,6 +84,7 @@ jobs:
           git config user.email "$author_email"
           git add VERSION
           git commit -m "Added new Rust Compiler Version: ${{ steps.rust_version.outputs.version }}"
+          git push
           echo "Show commit on 'master':"
           git show
           git tag -a "${{ steps.git_tag.outputs.tag }}" -m "Update Image '${{ steps.git_tag.outputs.tag }}' with Rust Compiler Version: ${{ steps.package_version.outputs.version_info }} "
