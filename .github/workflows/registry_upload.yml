@@ -68,7 +68,7 @@ jobs:
           echo "tag=$tag_label" >> $GITHUB_OUTPUT
           echo "exists=$tag_exists" >> $GITHUB_OUTPUT
         
-      - name: Tag the Repository with Package Version Tag
+      - name: Tag the Repository with Rust Version Tag
         id: git_tag_set
         if: steps.git_tag.outputs.exists == 0
         run: |
@@ -84,9 +84,9 @@ jobs:
           git config user.email "$author_email"
           git add VERSION
           git commit -m "Added new Rust Compiler Version: ${{ steps.rust_version.outputs.version }}"
-          git push
           echo "Show commit on 'master':"
           git show
+          git push
           git tag -a "${{ steps.git_tag.outputs.tag }}" -m "Update Image '${{ steps.git_tag.outputs.tag }}' with Rust Compiler Version: ${{ steps.package_version.outputs.version_info }} "
           git push origin ${{ steps.git_tag.outputs.tag }}
 
@@ -140,6 +140,8 @@ jobs:
           context: .
           push: true
           tags: ${{ steps.image_meta.outputs.tags }}
-          labels: ${{ steps.image_meta.outputs.labels }}      
+          labels: ${{ steps.image_meta.outputs.labels }}  
+          secrets: |
+            GIT_AUTH_TOKEN=${{ secrets.IMAGE_PUBLISH_TOKEN }}    
 
           
