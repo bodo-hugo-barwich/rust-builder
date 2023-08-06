@@ -126,7 +126,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
-          password: ${{ secrets.IMAGE_PUBLISH_TOKEN }}
+          password: ${{ secrets.IMAGE_PUBLISH_AUTH_TOKEN }}
 
       - name: Build and push Docker image
         if: steps.git_tag.outputs.exists == 0
