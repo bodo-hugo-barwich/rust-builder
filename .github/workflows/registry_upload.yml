@@ -137,6 +137,6 @@ jobs:
           tags: ${{ steps.image_meta.outputs.tags }}
           labels: ${{ steps.image_meta.outputs.labels }}  
           secrets: |
-            GIT_AUTH_TOKEN=${{ secrets.IMAGE_PUBLISH_TOKEN }}    
+            GIT_AUTH_TOKEN=${{ secrets.IMAGE_PUBLISH_AUTH_TOKEN }}    
 
           
