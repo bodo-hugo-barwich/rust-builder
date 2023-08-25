@@ -30,5 +30,46 @@ drwxr-xr-x 3 rust_builder rust 4.0K Mar 14  2022 .github
 drwxr-xr-x 4 rust_builder rust 4.0K Mar 17  2022 src
 drwxr-xr-x 4 rust_builder rust 4.0K Mar 13  2022 target
 drwxr-xr-x 2 rust_builder rust 4.0K Mar 17  2022 tests
+rust_builder@20ef08969521:~/project$ rustup show
+Default host: x86_64-unknown-linux-gnu
+rustup home:  /home/rust-build/.rustup
+
+stable-x86_64-unknown-linux-gnu (default)
+rustc 1.60.0 (7737e0b5c 2022-04-04)
 rust_builder@20ef08969521:~/project$ cargo test                           # run the 'cargo' commands as usual
+ust_builder@20ef08969521:~/project$ cargo test
+    Updating crates.io index
+  Downloaded actix-macros v0.1.3
+  // ...
+   Compiling actix-web v3.3.3
+   Compiling alerting_email v0.0.1 (/home/rust-build/project)
+    Finished test [unoptimized + debuginfo] target(s) in 11m 53s
+     Running unittests (target/debug/deps/alerting_email-d18154a3163a817d)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests (target/debug/deps/grafana_alerting_email-80e557f97ac92548)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/integration_tests.rs (target/debug/deps/integration_tests-69422124e8eb7ebf)
+
+running 3 tests
+test tests::test_ping ... ok
+test tests::test_send ... ok
+test tests::test_home ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests alerting_email
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
 ```
+The build artifacts are placed in the target directory of the Docker Host

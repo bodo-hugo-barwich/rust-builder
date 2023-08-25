@@ -31,7 +31,7 @@ jobs:
       - name: Build the Image
         run: |
           echo "Build the Docker Image"
-          docker build -t rust_builder .
+          docker build -t rust_builder . --build-arg="RUST_VERSION=1.60.0"
 
       # Show Environment and Compiler Version
       - name: Show Environment and Compiler Version
