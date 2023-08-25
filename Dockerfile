@@ -4,6 +4,8 @@ ENV ARCH "x86_64-unknown-linux-gnu"
 ENV DOWNLOAD_URL "https://static.rust-lang.org/rustup/dist"
 ENV PATH="$PATH:~/.cargo/bin"
 
+ARG RUST_VERSION
+
 RUN apt-get update\
   && echo "path: '${PATH}'"\
   && /usr/bin/apt-get -y install apt-utils apt-file wget
@@ -36,4 +38,14 @@ RUN mkdir -p /home/rust-build/project/ \
   && echo $(date +"%F %T") "- rustup-init: launching ..." | tee -a log/rustup-init_install_$(date +"%F").log\
   && rustup-init -y --no-modify-path 2>&1 | tee -a log/rustup-init_install_$(date +"%F").log
   #&& source $HOME/.cargo/env
+
+# Install Rust Version according to Build Argument
+RUN if [ -n $RUST_VERSION ]; then\
+  echo "* Requested Rust Compiler Version:" $RUST_VERSION ;\
+  echo "* Install Rust Compiler requested Version ..." ;\
+  rustup install $RUST_VERSION ;\
+  echo "* Rust Compiler Version:" && rustc --version ;\
+  echo "* RustUp Show:" && rustup show \
+  fi
+
 WORKDIR /home/rust-build/project/
