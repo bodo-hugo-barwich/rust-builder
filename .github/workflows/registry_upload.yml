@@ -36,17 +36,30 @@ jobs:
         with:
           token: ${{ secrets.IMAGE_PUBLISH_TOKEN }}
 
-#      - name: Set up QEMU
-#        uses: docker/setup-qemu-action@v1
+      - name: Requested Version
+        id: requested_version
+        run: |
+          version_result=`scripts/version_matrix.py check`
+          echo $version_result
+          requested_version=`echo "$version_result" | sed -n 2p`
+          echo "version=$requested_version" >> $GITHUB_OUTPUT
       
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2.5.0
         
-      # Test the Docker Image Build
+      # Build the Docker Image Build with new stable Rust Version
       - name: Build the Image
+        if: steps.requested_version.outputs.version == ''
         run: |
           echo "Build the Docker Image"
           docker build -t rust_builder .
+        
+      # Build the Docker Image Build with new stable Rust Version
+      - name: Build the Image
+        if: steps.requested_version.outputs.version != ''
+        run: |
+          echo "Build the Docker Image"
+          docker build -t rust_builder:${{steps.requested_version.outputs.version}} . --build-arg="RUST_VERION=${{steps.requested_version.outputs.version}}"
 
       # Show Compiler Version
       - name: Show Compiler Version
