@@ -42,10 +42,12 @@ RUN mkdir -p /home/rust-build/project/ \
   #&& source ${HOME}/.cargo/env
 
 # Install Rust Version according to Build Argument
-RUN if [ -n $RUST_VERSION ]; then\
+RUN if [ -n "$RUST_VERSION" ]; then\
   echo "* Requested Rust Compiler Version:" $RUST_VERSION ;\
   echo "* Install Rust Compiler requested Version ..." ;\
   ${HOME}/.cargo/bin/rustup install $RUST_VERSION ;\
+  ${HOME}/.cargo/bin/rustup default $RUST_VERSION ;\
+	${HOME}/.cargo/bin/rustup toolchain uninstall stable ;\
   echo "* Rust Compiler Version:" && ${HOME}/.cargo/bin/rustc --version ;\
   echo "* RustUp Show:" && ${HOME}/.cargo/bin/rustup show ;\
   fi
