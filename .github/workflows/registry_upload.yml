@@ -59,7 +59,7 @@ jobs:
         if: steps.requested_version.outputs.version != ''
         run: |
           echo "Build the Docker Image"
-          docker build -t rust_builder:${{steps.requested_version.outputs.version}} . --build-arg="RUST_VERION=${{steps.requested_version.outputs.version}}"
+          docker build -t rust_builder:${{steps.requested_version.outputs.version}} . --build-arg="RUST_VERSION=${{steps.requested_version.outputs.version}}"
 
       # Show Compiler Version
       - name: Show Compiler Version
