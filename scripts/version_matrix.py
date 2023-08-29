@@ -48,11 +48,15 @@ def load_version_matrix(module_name, file_name, module_debug, module_quiet):
     if module_debug:
         print("matrix data:'{}'".format(matrix_data))
 
-
     return matrix_result
 
 
-def save_version_matrix(module_name, file_name, version_matrix, module_debug, module_quiet):
+def save_version_matrix(
+        module_name,
+        file_name,
+        version_matrix,
+        module_debug,
+        module_quiet):
     save_result = True
 
     print("version mtx: '{}'".format(version_matrix))
@@ -228,14 +232,18 @@ if matrix_command == 'print':
             print("script '{}' - Rust Versions:".format(module_file))
             print("\n".join(matrix_result['matrix']['rust-versions']))
         else:
-            print("script '{}' - Rust Versions: no versions registered".format(module_file))
+            print(
+                "script '{}' - Rust Versions: no versions registered".format(module_file))
 
     elif module_output == 'json':
-        print("{}".format(json.dumps(matrix_result['matrix']['rust-versions'])))
+        print(
+            "{}".format(
+                json.dumps(
+                    matrix_result['matrix']['rust-versions'])))
 
     else:
         print("script '{}' - Rust Versions:\n{}".format(module_file,
-                                                             str(matrix_result['matrix']['rust-versions'])))
+                                                        str(matrix_result['matrix']['rust-versions'])))
 
 elif matrix_command == 'check':
     # ------------------------
@@ -276,7 +284,8 @@ elif matrix_command == 'check':
             print("script '{}' - Requested Versions:".format(module_file))
             print("\n".join(requested_versions))
         else:
-            print("script '{}' - Requested Versions: All versions built".format(module_file))
+            print(
+                "script '{}' - Requested Versions: All versions built".format(module_file))
 
     elif module_output == 'json':
         print("{}".format(json.dumps(requested_versions)))
@@ -298,23 +307,30 @@ elif matrix_command == 'save':
 
     matrix_result['matrix']['rust-versions'].sort()
 
-    save_result = save_version_matrix(module_file, matrix_file, matrix_result['matrix'], module_debug, module_quiet)
+    save_result = save_version_matrix(
+        module_file,
+        matrix_file,
+        matrix_result['matrix'],
+        module_debug,
+        module_quiet)
 
     # ------------------------
     # Print the Version Save Result
 
     if module_output == 'plain':
         if save_result:
-            print("script '{}' - Save Versions: All versions saved correctly".format(module_file))
+            print(
+                "script '{}' - Save Versions: All versions saved correctly".format(module_file))
         else:
-            print("script '{}' - Save Versions: Versions could not be saved!".format(module_file))
+            print(
+                "script '{}' - Save Versions: Versions could not be saved!".format(module_file))
 
     elif module_output == 'json':
         print("{}".format(json.dumps(save_result)))
 
     else:
         print("script '{}' - Save Versions: {}".format(module_file,
-                                                             str(save_result)))
+                                                       str(save_result)))
 
 
 if module_debug:

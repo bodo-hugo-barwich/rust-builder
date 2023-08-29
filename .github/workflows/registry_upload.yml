@@ -25,9 +25,11 @@ jobs:
         run: | 
           perl --version
           sudo apt-get update 
-          sudo apt-get -y install git cpanminus
+          sudo apt-get -y install git cpanminus python3-yaml python3-git
           
-          cpanm -n Process::SubProcess
+          cpanm --local-lib=~/perl5 local::lib
+          eval $(perl -Mlocal::lib -I ~/perl5/lib/perl5/)
+          cpanm -n Process::SubProcess         
           echo "Process::SubProcess Command:"
           which run_subprocess.pl || true
       
