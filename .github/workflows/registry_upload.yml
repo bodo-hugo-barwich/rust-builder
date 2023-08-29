@@ -99,7 +99,8 @@ jobs:
           author_email=`echo "$author_res" | cut -d"|" -f2`
           git config user.name "$author_user"
           git config user.email "$author_email"
-          git add VERSION rust-version_matrix.yml
+          git add rust-version_matrix.yml || true
+          git add VERSION
           git commit -m "Added new Rust Compiler Version: ${{ steps.rust_version.outputs.version }}"
           echo "Show commit on 'master':"
           git show
