@@ -88,8 +88,8 @@ jobs:
         if: steps.git_tag.outputs.exists == 0
         run: |
           echo "git - tag: '${{ steps.git_tag.outputs.tag }}'; exists: '${{ steps.git_tag.outputs.exists }}'"
-          echo "git - commit: '${{ steps.package_version.outputs.version_commit }}'"
           git checkout master
+          save_result=`scripts/version_matrix.py save ${{ steps.rust_version.outputs.version }}`
           author_res=`git log -1 | grep -i author | sed -re 's/^[^:]+: ([^<]+) <([^>]+)>.*/\1|\2/i'`
           echo -e "Commit Author:\n$author_res"
           if [ -z "$author_res" ]; then echo "could not find GIT COMMIT AUTHOR"; exit 1; fi;
@@ -97,7 +97,7 @@ jobs:
           author_email=`echo "$author_res" | cut -d"|" -f2`
           git config user.name "$author_user"
           git config user.email "$author_email"
-          git add VERSION
+          git add VERSION rust-version_matrix.yml
           git commit -m "Added new Rust Compiler Version: ${{ steps.rust_version.outputs.version }}"
           echo "Show commit on 'master':"
           git show
