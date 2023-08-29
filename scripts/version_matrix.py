@@ -13,7 +13,7 @@ import os
 import os.path
 import json
 import yaml
-from yaml import BaseLoader
+from yaml import BaseLoader, BaseDumper
 from git import Repo, GitCommandError
 
 
@@ -25,7 +25,7 @@ def load_version_matrix(module_name, file_name, module_debug, module_quiet):
     matrix_data = None
 
     try:
-        stream = open(matrix_file, 'r')
+        stream = open(file_name, 'r')
         matrix_data = yaml.load(stream, Loader=BaseLoader)
         stream.close()
         matrix_result['matrix'] = matrix_data
@@ -39,10 +39,39 @@ def load_version_matrix(module_name, file_name, module_debug, module_quiet):
 
         matrix_result['success'] = False
 
+    if matrix_result['matrix'] is None:
+        matrix_result['matrix'] = {}
+
+    if 'rust-versions' not in matrix_result['matrix']:
+        matrix_result['matrix']['rust-versions'] = []
+
     if module_debug:
         print("matrix data:'{}'".format(matrix_data))
 
+
     return matrix_result
+
+
+def save_version_matrix(module_name, file_name, version_matrix, module_debug, module_quiet):
+    save_result = True
+
+    print("version mtx: '{}'".format(version_matrix))
+
+    try:
+        stream = open(file_name, 'w')
+        yaml.dump(version_matrix, stream)
+        stream.close()
+    except Exception as e:
+        if not module_quiet:
+            print(
+                "script '{}' - Matrix File '{}': Save File failed!".format(
+                    module_name, file_name), file=sys.stderr)
+            print("script '{}' - Matrix File Exception Message: {}".format(
+                module_name, str(e)), file=sys.stderr)
+
+        save_result = False
+
+    return save_result
 
 
 def git_fetch_tags(module_name, repository, module_debug, module_quiet):
@@ -126,7 +155,7 @@ matrix_file = 'rust-version_matrix.yml'
 if len(sys.argv) > 1:
     command = sys.argv[1]
 
-    print("cmd: '{}'".format(command))
+    # print("cmd: '{}'".format(command))
 
     if command[0: 2] != '--' and command[0] != '-':
         matrix_command = command
@@ -149,7 +178,7 @@ for arg in sys.argv:
             elif arg[idx] == 'q':
                 module_quiet = True
     else:
-        if arg.rfind(module_file, 0) == -1:
+        if arg.rfind(module_file, 0) == -1 and arg not in command_list:
             if arg[0] == 'v':
                 arg = arg[1: len(arg)]
 
@@ -178,6 +207,9 @@ if matrix_command in command_list:
         module_res = 1
 
 else:
+    # ------------------------
+    # Command Error
+
     if not module_quiet:
         print(
             "script '{}' - Matrix Command: Invalid Command '{}'!".format(module_file, matrix_command))
@@ -244,7 +276,7 @@ elif matrix_command == 'check':
             print("script '{}' - Requested Versions:".format(module_file))
             print("\n".join(requested_versions))
         else:
-            print("script '{}' - Requested Versions: all versions built".format(module_file))
+            print("script '{}' - Requested Versions: All versions built".format(module_file))
 
     elif module_output == 'json':
         print("{}".format(json.dumps(requested_versions)))
@@ -254,7 +286,35 @@ elif matrix_command == 'check':
                                                              str(requested_versions)))
 
 elif matrix_command == 'save':
-    pass
+    if matrix_result['matrix'] is None:
+        matrix_result['matrix'] = {}
+
+    if 'rust-versions' not in matrix_result['matrix']:
+        matrix_result['matrix']['rust-versions'] = []
+
+    for version in save_versions:
+        if version not in matrix_result['matrix']['rust-versions']:
+            matrix_result['matrix']['rust-versions'].append(version)
+
+    matrix_result['matrix']['rust-versions'].sort()
+
+    save_result = save_version_matrix(module_file, matrix_file, matrix_result['matrix'], module_debug, module_quiet)
+
+    # ------------------------
+    # Print the Version Save Result
+
+    if module_output == 'plain':
+        if save_result:
+            print("script '{}' - Save Versions: All versions saved correctly".format(module_file))
+        else:
+            print("script '{}' - Save Versions: Versions could not be saved!".format(module_file))
+
+    elif module_output == 'json':
+        print("{}".format(json.dumps(save_result)))
+
+    else:
+        print("script '{}' - Save Versions: {}".format(module_file,
+                                                             str(save_result)))
 
 
 if module_debug:

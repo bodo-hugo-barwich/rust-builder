@@ -26,12 +26,20 @@ jobs:
         
       - name: Listing Directory Contents
         run: pwd && ls -lah
+
+      - name: Rust Version Matrix
+        id: version_matrix
+        run: |
+          version_result=`scripts/version_matrix.py print`
+          echo $version_result
+          first_version=`echo "$version_result" | sed -n 2p`
+          echo "version=$first_version" >> $GITHUB_OUTPUT
         
       # Test the Docker Image Build
       - name: Build the Image
         run: |
           echo "Build the Docker Image"
-          docker build -t rust_builder . --build-arg="RUST_VERSION=1.60.0"
+          docker build -t rust_builder . --build-arg="RUST_VERSION=${{steps.version_matrix.outputs.version}}"
 
       # Show Environment and Compiler Version
       - name: Show Environment and Compiler Version
@@ -46,4 +54,4 @@ jobs:
           echo "* RustUp Components Installed:" && docker run -t rust_builder bash -c "rustup component list --installed"
           echo "* RustUp Components Help:" && docker run -t rust_builder bash -c "rustup component --help"
           if [ -z "$rust_version_info" ]; then echo "Rust Installation failed!"; exit 1; fi;
-          if [ "$rust_version" != "1.60.0" ]; then echo "Rust Version '$rust_version' does not match requested Version"; exit 1; fi;
+          if [ "$rust_version" != "${{steps.version_matrix.outputs.version}}" ]; then echo "Rust Version '$rust_version' does not match requested Version"; exit 1; fi;
