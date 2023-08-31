@@ -21,22 +21,36 @@ jobs:
         run: |
           sudo apt-get update 
           sudo apt-cache search docker | sort
+
+      - name: Install Python Dependencies
+        run: | 
+          python3 --version
+          sudo apt-get update && sudo apt-get -y install git python3-yaml python3-git
         
       - uses: actions/checkout@v2
         
       - name: Listing Directory Contents
         run: pwd && ls -lah
+
+      - name: Rust Version Matrix
+        id: version_matrix
+        run: |
+          version_result=`scripts/version_matrix.py print`
+          echo $version_result
+          first_version=`echo "$version_result" | sed -n 2p`
+          echo "version=$first_version" >> $GITHUB_OUTPUT
         
       # Test the Docker Image Build
       - name: Build the Image
         run: |
           echo "Build the Docker Image"
-          docker build -t rust_builder .
+          docker build -t rust_builder . --build-arg="RUST_VERSION=${{steps.version_matrix.outputs.version}}"
 
       # Show Environment and Compiler Version
       - name: Show Environment and Compiler Version
         run: | 
-          rust_version=`docker run -t rust_builder bash -c "rustc --version"`
+          rust_version_info=`docker run -t rust_builder bash -c "rustc --version"`
+          rust_version=`echo "$rust_version_info" | cut -d' ' -f2`
           echo "* Operating System:" && docker run -t rust_builder cat /etc/os-release
           echo "* Rust Compiler Version: $rust_version"
           echo "* RustUp Version:" && docker run -t rust_builder bash -c "rustup --version"
@@ -44,5 +58,5 @@ jobs:
           echo "* RustUp Toolchains Installed:" && docker run -t rust_builder bash -c "rustup toolchain list"
           echo "* RustUp Components Installed:" && docker run -t rust_builder bash -c "rustup component list --installed"
           echo "* RustUp Components Help:" && docker run -t rust_builder bash -c "rustup component --help"
-          if [ -z "$rust_version" ]; then echo "Rust Installation failed!"; exit 1; fi;
-          
+          if [ -z "$rust_version_info" ]; then echo "Rust Installation failed!"; exit 1; fi;
+          if [ "$rust_version" != "${{steps.version_matrix.outputs.version}}" ]; then echo "Rust Version '$rust_version' does not match requested Version"; exit 1; fi;
