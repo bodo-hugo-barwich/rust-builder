@@ -8,6 +8,51 @@ Docker Image with Rust Compiler in its `stable` version
 * Non-`root` User Account
 * Install Logs
 
+## Toolchain Components
+The **_Rust_ Toolchain Components** provided by this image can be found in the test results
+in the test "_Show Environment and Compiler Version_":
+```plain
+* Operating System:
+NAME="Ubuntu"
+VERSION="16.04.7 LTS (Xenial Xerus)"
+ID=ubuntu
+ID_LIKE=debian
+PRETTY_NAME="Ubuntu 16.04.7 LTS"
+VERSION_ID="16.04"
+HOME_URL="http://www.ubuntu.com/"
+SUPPORT_URL="http://help.ubuntu.com/"
+BUG_REPORT_URL="http://bugs.launchpad.net/ubuntu/"
+VERSION_CODENAME=xenial
+UBUNTU_CODENAME=xenial
+* Rust Compiler Version: 1.41.0
+* RustUp Version:
+rustup 1.26.0 (5af9b9484 2023-04-05)
+info: This is the version for the rustup toolchain manager, not the rustc compiler.
+info: The currently active `rustc` version is `rustc 1.41.0 (5e1a79984 2020-01-27)`
+* RustUp Show:
+Default host: x86_64-unknown-linux-gnu
+rustup home:  /home/rust-build/.rustup
+
+1.41.0-x86_64-unknown-linux-gnu (default)
+rustc 1.41.0 (5e1a79984 2020-01-27)
+* RustUp Toolchains Installed:
+1.41.0-x86_64-unknown-linux-gnu (default)
+* RustUp Components Installed:
+cargo-x86_64-unknown-linux-gnu
+clippy-x86_64-unknown-linux-gnu
+rust-docs-x86_64-unknown-linux-gnu
+rust-std-x86_64-unknown-linux-gnu
+rustc-x86_64-unknown-linux-gnu
+rustfmt-x86_64-unknown-linux-gnu
+```
+
+## Available Versions (Tags)
+All available **_Rust_ Compiler Versions** are listed in the
+_Version Matrix File_ `rust-version_matrix.yml`
+
+New Versions can be added opening a **Pull Request** and adding the version to the
+_Version Matrix File_
+
 ## Usage
 The project directory will be mounted into the new container and be opened with `bash`
 like:
@@ -73,3 +118,5 @@ test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; fini
 
 ```
 The build artifacts are placed in the target directory of the Docker Host
+
+
