@@ -59,8 +59,6 @@ def save_version_matrix(
         module_quiet):
     save_result = True
 
-    print("version mtx: '{}'".format(version_matrix))
-
     try:
         stream = open(file_name, 'w')
         yaml.dump(version_matrix, stream)
@@ -301,29 +299,37 @@ elif matrix_command == 'save':
     if 'rust-versions' not in matrix_result['matrix']:
         matrix_result['matrix']['rust-versions'] = []
 
+    added_count = 0
     for version in save_versions:
         if version not in matrix_result['matrix']['rust-versions']:
             matrix_result['matrix']['rust-versions'].append(version)
+            added_count += 1
 
-    matrix_result['matrix']['rust-versions'].sort()
+    if added_count > 0:
+        matrix_result['matrix']['rust-versions'].sort()
 
-    save_result = save_version_matrix(
-        module_file,
-        matrix_file,
-        matrix_result['matrix'],
-        module_debug,
-        module_quiet)
+        save_result = save_version_matrix(
+            module_file,
+            matrix_file,
+            matrix_result['matrix'],
+            module_debug,
+            module_quiet)
 
     # ------------------------
     # Print the Version Save Result
 
     if module_output == 'plain':
-        if save_result:
-            print(
-                "script '{}' - Save Versions: All versions saved correctly".format(module_file))
+        if added_count > 0:
+            if save_result:
+                print(
+                    "script '{}' - Save Versions: '{}' versions added and saved correctly".format(module_file, added_count))
+            else:
+                print(
+                    "script '{}' - Save Versions: Versions could not be saved!".format(module_file))
+
         else:
             print(
-                "script '{}' - Save Versions: Versions could not be saved!".format(module_file))
+                    "script '{}' - Save Versions: '{}' versions added".format(module_file, added_count))
 
     elif module_output == 'json':
         print("{}".format(json.dumps(save_result)))

@@ -44,6 +44,7 @@ jobs:
           version_result=`scripts/version_matrix.py check`
           echo $version_result
           requested_version=`echo "$version_result" | sed -n 2p`
+          if [ -z "$requested_version" ]; then requested_version="latest"; fi
           echo "version=$requested_version" >> $GITHUB_OUTPUT
       
       - name: Set up Docker Buildx
@@ -51,14 +52,14 @@ jobs:
         
       # Build the Docker Image Build with new stable Rust Version
       - name: Build the Image
-        if: steps.requested_version.outputs.version == ''
+        if: steps.requested_version.outputs.version == 'latest'
         run: |
           echo "Build the Docker Image"
           docker build -t rust_builder .
         
       # Build the Docker Image Build with new stable Rust Version
       - name: Build the Image
-        if: steps.requested_version.outputs.version != ''
+        if: steps.requested_version.outputs.version != 'latest'
         run: |
           echo "Build the Docker Image"
           docker build -t rust_builder:${{steps.requested_version.outputs.version}} . --build-arg="RUST_VERSION=${{steps.requested_version.outputs.version}}"
@@ -67,7 +68,7 @@ jobs:
       - name: Show Compiler Version
         id: rust_version
         run: | 
-          rust_version_info=`docker run -t rust_builder bash -c "rustc --version"`          
+          rust_version_info=`docker run -t rust_builder:${{steps.requested_version.outputs.version}} bash -c "rustc --version"`          
           rust_version=`echo "$rust_version_info" | awk '{print $2}'`
           echo "* Rust Compiler Version:" | tee > VERSION
           echo "$rust_version | $rust_version_info" | tee >> VERSION
