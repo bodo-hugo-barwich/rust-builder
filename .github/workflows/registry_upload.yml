@@ -44,7 +44,7 @@ jobs:
           version_result=`scripts/version_matrix.py check`
           echo $version_result
           requested_version=`echo "$version_result" | sed -n 2p`
-          if [ -z "$requested_version" ]; then requested_version="latest"; fi
+          if [ -z "$requested_version" ]; then requested_version="latest"; fi;
           echo "version=$requested_version" >> $GITHUB_OUTPUT
       
       - name: Set up Docker Buildx
@@ -92,7 +92,6 @@ jobs:
         run: |
           echo "git - tag: '${{ steps.git_tag.outputs.tag }}'; exists: '${{ steps.git_tag.outputs.exists }}'"
           git checkout master
-          save_result=`scripts/version_matrix.py save ${{ steps.rust_version.outputs.version }}`
           author_res=`git log -1 | grep -i author | sed -re 's/^[^:]+: ([^<]+) <([^>]+)>.*/\1|\2/i'`
           echo -e "Commit Author:\n$author_res"
           if [ -z "$author_res" ]; then echo "could not find GIT COMMIT AUTHOR"; exit 1; fi;
@@ -100,7 +99,10 @@ jobs:
           author_email=`echo "$author_res" | cut -d"|" -f2`
           git config user.name "$author_user"
           git config user.email "$author_email"
-          git add rust-version_matrix.yml || true
+          save_result=`scripts/version_matrix.py save ${{ steps.rust_version.outputs.version }}`
+          echo "$save_result"
+          modified=`echo "$save_result" | sed -re "s/.*save versions: '([0-9]+)' versions.*/\1/i"`
+          if [ "$modified" == "1" ]; then git add rust-version_matrix.yml; fi;
           git add VERSION
           git commit -m "Added new Rust Compiler Version: ${{ steps.rust_version.outputs.version }}"
           echo "Show commit on 'master':"
@@ -112,7 +114,7 @@ jobs:
       # Show Compiler Version
       - name: Set Compiler Version Tag
         id: image_tag
-        if: steps.git_tag.outputs.exists == 0
+        if: (steps.git_tag.outputs.exists == 0) && (steps.requested_version.outputs.version == 'latest')
         run: | 
           echo "rustc ver: '${{ steps.rust_version.outputs.version }}'"
           docker tag rust_builder rust_builder:${{ steps.git_tag.outputs.tag }}
