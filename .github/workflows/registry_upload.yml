@@ -138,7 +138,7 @@ jobs:
           echo "* Image Labels:" 
           echo "${{ steps.image_meta.outputs.labels }}"
           echo "* Image Inspection:" 
-          docker inspect rust_builder
+          docker inspect rust_builder:${{steps.requested_version.outputs.version}}
       
       - name: Login to GitHub Container Registry
         if: steps.git_tag.outputs.exists == 0
