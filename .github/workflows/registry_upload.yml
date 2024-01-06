@@ -36,7 +36,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          token: ${{ secrets.IMAGE_PUBLISH_TOKEN }}
+          token: ${{ secrets.RELEASE_PUBLISH_TOKEN }}
 
       - name: Requested Version
         id: requested_version
