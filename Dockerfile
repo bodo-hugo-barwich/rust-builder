@@ -9,14 +9,13 @@ ARG RUST_VERSION
 RUN apt-get update\
   && echo "path: '${PATH}'"\
   && /usr/bin/apt-get -y install apt-utils apt-file wget
+
 RUN mkdir -p /usr/share/rustup/log\
   && cd /usr/share/rustup/ \
   && date +"%F %T - %s" > log/rustup_install_$(date +"%F").log\
   && echo $(date +"%F %T") "- rustup: downloading ..." | tee -a log/rustup_install_$(date +"%F").log\
   && wget -S ${DOWNLOAD_URL}/${ARCH}/rustup-init.sha256 2>&1 | tee -a log/rustup_install_$(date +"%F").log\
   && wget -S ${DOWNLOAD_URL}/${ARCH}/rustup-init 2>&1 | tee -a log/rustup_install_$(date +"%F").log\
-  && TGTDIR=`cat rustup-init.sha256 | cut -d" " -f2 | sed -re 's#\*(.*/)[^/]+$#\1#'` \
-  && mkdir -p $TGTDIR && cp rustup-init $TGTDIR \
   && echo $(date +"%F %T") "- rustup: download checking ..." | tee -a log/rustup_install_$(date +"%F").log\
   && CHKOK=`sha256sum -c rustup-init.sha256` \
   && echo $CHKOK | tee -a log/rustup_install_$(date +"%F").log \
