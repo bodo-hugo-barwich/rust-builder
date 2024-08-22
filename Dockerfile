@@ -1,5 +1,10 @@
 FROM ubuntu:xenial
 
+LABEL org.opencontainers.image.title "rust-builder"
+LABEL org.opencontainers.image.description "Rust Docker Image based on Ubuntu:Xenial"
+LABEL org.opencontainers.image.source https://github.com/bodo-hugo-barwich/rust-builder
+LABEL org.opencontainers.image.url ghcr.io/bodo-hugo-barwich/rust-builder
+
 ENV ARCH "x86_64-unknown-linux-gnu"
 ENV DOWNLOAD_URL "https://static.rust-lang.org/rustup/dist"
 ENV PATH="$PATH:~/.cargo/bin"
