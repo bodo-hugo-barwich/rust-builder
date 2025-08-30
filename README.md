@@ -82,7 +82,6 @@ rustup home:  /home/rust-build/.rustup
 stable-x86_64-unknown-linux-gnu (default)
 rustc 1.60.0 (7737e0b5c 2022-04-04)
 rust_builder@20ef08969521:~/project$ cargo test                           # run the 'cargo' commands as usual
-ust_builder@20ef08969521:~/project$ cargo test
     Updating crates.io index
   Downloaded actix-macros v0.1.3
   // ...
@@ -117,6 +116,8 @@ running 0 tests
 test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
 
 ```
+
+### Build Artifacts
 The build artifacts are placed in the target directory of the Docker Host
 
 

@@ -81,7 +81,7 @@ def git_fetch_tags(module_name, repository, module_debug, module_quiet):
 
     try:
         for remote in repository.remotes:
-            remote.fetch('--tags')
+            remote.fetch(tags=True)
 
         for tag_obj in repository.tags:
             tags_result['tags'][tag_obj.name] = str(tag_obj.tag)
@@ -115,233 +115,235 @@ def check_version_tags(tag_list, version_matrix):
 # Executing Section
 
 
-# ------------------------
-# Script Environment
+if __name__ == "__main__":
 
-module_file = ''
-module_path = os.path.abspath(__file__)
-main_dir = ''
-work_dir = ''
+    # ------------------------
+    # Script Environment
+
+    module_file = ''
+    module_path = os.path.abspath(__file__)
+    main_dir = ''
+    work_dir = ''
 
 
-slash_pos = module_path.rfind('/', 0)
+    slash_pos = module_path.rfind('/', 0)
 
-if slash_pos != -1:
-    work_dir = module_path[0: slash_pos + 1]
-    module_file = module_path[slash_pos + 1: len(module_path)]
-else:
-    module_file = module_path
-
-if work_dir != '':
-    slash_pos = work_dir.rfind('/', 0, -1)
     if slash_pos != -1:
-        main_dir = work_dir[0: slash_pos + 1]
+        work_dir = module_path[0: slash_pos + 1]
+        module_file = module_path[slash_pos + 1: len(module_path)]
     else:
-        main_dir = work_dir
+        module_file = module_path
+
+    if work_dir != '':
+        slash_pos = work_dir.rfind('/', 0, -1)
+        if slash_pos != -1:
+            main_dir = work_dir[0: slash_pos + 1]
+        else:
+            main_dir = work_dir
 
 
-# ------------------------
-# Script Parameter
+    # ------------------------
+    # Script Parameter
 
-matrix_command = 'first'
-save_versions = []
-module_output = 'plain'
-module_debug = False
-module_quiet = False
-module_res = 0
+    matrix_command = 'first'
+    save_versions = []
+    module_output = 'plain'
+    module_debug = False
+    module_quiet = False
+    module_res = 0
 
-command_list = ['print', 'check', 'save']
+    command_list = ['print', 'check', 'save']
 
-matrix_file = 'rust-version_matrix.yml'
+    matrix_file = 'rust-version_matrix.yml'
 
-if len(sys.argv) > 1:
-    command = sys.argv[1]
+    if len(sys.argv) > 1:
+        command = sys.argv[1]
 
-    # print("cmd: '{}'".format(command))
+        # print("cmd: '{}'".format(command))
 
-    if command[0: 2] != '--' and command[0] != '-':
-        matrix_command = command
+        if command[0: 2] != '--' and command[0] != '-':
+            matrix_command = command
 
-for arg in sys.argv:
-    if arg[0: 2] == '--':
-        arg = arg[2: len(arg)]
-        if arg in ['plain', 'json']:
-            module_output = arg
-        elif arg == 'debug':
-            module_debug = True
-        elif arg == 'quiet':
-            module_quiet = True
-
-    elif arg[0] == '-':
-        arg = arg[1: len(arg)]
-        for idx in range(0, len(arg)):
-            if arg[idx] == 'd':
+    for arg in sys.argv:
+        if arg[0: 2] == '--':
+            arg = arg[2: len(arg)]
+            if arg in ['plain', 'json']:
+                module_output = arg
+            elif arg == 'debug':
                 module_debug = True
-            elif arg[idx] == 'q':
+            elif arg == 'quiet':
                 module_quiet = True
-    else:
-        if arg.rfind(module_file, 0) == -1 and arg not in command_list:
-            if arg[0] == 'v':
-                arg = arg[1: len(arg)]
 
-            save_versions.append(arg)
-
-if matrix_command in command_list:
-    # ------------------------
-    # Read the Version Matrix
-
-    matrix_result = load_version_matrix(
-        module_file,
-        matrix_file,
-        module_debug,
-        module_quiet)
-
-    if module_debug:
-        print(
-            "script '{}' - Matrix Result:\n{}".format(module_file, str(matrix_result)))
-
-    if not matrix_result['success']:
-        if not module_quiet:
-            print(
-                "script '{}' - Version Matrix: Read Version Matrix has failed!".format(module_file),
-                file=sys.stderr)
-
-        module_res = 1
-
-else:
-    # ------------------------
-    # Command Error
-
-    if not module_quiet:
-        print(
-            "script '{}' - Matrix Command: Invalid Command '{}'!".format(module_file, matrix_command))
-        print(
-            "script '{}' - Matrix Command: {}".format(module_file, str(command_list)))
-
-        module_res = 2
-
-
-if matrix_command == 'print':
-    # ------------------------
-    # Print the Version Check Result
-
-    if module_output == 'plain':
-        if len(matrix_result['matrix']['rust-versions']) > 0:
-            print("script '{}' - Rust Versions:".format(module_file))
-            print("\n".join(matrix_result['matrix']['rust-versions']))
+        elif arg[0] == '-':
+            arg = arg[1: len(arg)]
+            for idx in range(0, len(arg)):
+                if arg[idx] == 'd':
+                    module_debug = True
+                elif arg[idx] == 'q':
+                    module_quiet = True
         else:
-            print(
-                "script '{}' - Rust Versions: no versions registered".format(module_file))
+            if arg.rfind(module_file, 0) == -1 and arg not in command_list:
+                if arg[0] == 'v':
+                    arg = arg[1: len(arg)]
 
-    elif module_output == 'json':
-        print(
-            "{}".format(
-                json.dumps(
-                    matrix_result['matrix']['rust-versions'])))
+                save_versions.append(arg)
 
-    else:
-        print("script '{}' - Rust Versions:\n{}".format(module_file,
-                                                        str(matrix_result['matrix']['rust-versions'])))
+    if matrix_command in command_list:
+        # ------------------------
+        # Read the Version Matrix
 
-elif matrix_command == 'check':
-    # ------------------------
-    # Fetch the Git Tag list
-
-    repo = Repo('.git')
-    git = repo.git
-
-    tags_result = git_fetch_tags(module_file, repo, module_debug, module_quiet)
-
-    if module_debug:
-        print(
-            "script '{}' - Tags Result:\n{}".format(module_file, str(tags_result)))
-
-    if not tags_result['success']:
-        if not module_quiet:
-            print(
-                "script '{}' - Git Tag list: Listing Tags has failed!".format(module_file),
-                file=sys.stderr)
-
-        module_res = 1
-
-    # ------------------------
-    # Check for missing Versions
-
-    requested_versions = check_version_tags(
-        tags_result['tags'], matrix_result['matrix'])
-
-    if module_debug:
-        print("script '{}' - Requested Versions:\n{}".format(module_file,
-                                                             str(requested_versions)))
-
-    # ------------------------
-    # Print the Version Check Result
-
-    if module_output == 'plain':
-        if len(requested_versions) > 0:
-            print("script '{}' - Requested Versions:".format(module_file))
-            print("\n".join(requested_versions))
-        else:
-            print(
-                "script '{}' - Requested Versions: All versions built".format(module_file))
-
-    elif module_output == 'json':
-        print("{}".format(json.dumps(requested_versions)))
-
-    else:
-        print("script '{}' - Requested Versions:\n{}".format(module_file,
-                                                             str(requested_versions)))
-
-elif matrix_command == 'save':
-    if matrix_result['matrix'] is None:
-        matrix_result['matrix'] = {}
-
-    if 'rust-versions' not in matrix_result['matrix']:
-        matrix_result['matrix']['rust-versions'] = []
-
-    added_count = 0
-    for version in save_versions:
-        if version not in matrix_result['matrix']['rust-versions']:
-            matrix_result['matrix']['rust-versions'].append(version)
-            added_count += 1
-
-    if added_count > 0:
-        matrix_result['matrix']['rust-versions'].sort()
-
-        save_result = save_version_matrix(
+        matrix_result = load_version_matrix(
             module_file,
             matrix_file,
-            matrix_result['matrix'],
             module_debug,
             module_quiet)
 
-    # ------------------------
-    # Print the Version Save Result
-
-    if module_output == 'plain':
-        if added_count > 0:
-            if save_result:
-                print(
-                    "script '{}' - Save Versions: '{}' versions added and saved correctly".format(module_file, added_count))
-            else:
-                print(
-                    "script '{}' - Save Versions: Versions could not be saved!".format(module_file))
-
-        else:
+        if module_debug:
             print(
-                    "script '{}' - Save Versions: '{}' versions added".format(module_file, added_count))
+                "script '{}' - Matrix Result:\n{}".format(module_file, str(matrix_result)))
 
-    elif module_output == 'json':
-        print("{}".format(json.dumps(save_result)))
+        if not matrix_result['success']:
+            if not module_quiet:
+                print(
+                    "script '{}' - Version Matrix: Read Version Matrix has failed!".format(module_file),
+                    file=sys.stderr)
+
+            module_res = 1
 
     else:
-        print("script '{}' - Save Versions: {}".format(module_file,
-                                                       str(save_result)))
+        # ------------------------
+        # Command Error
+
+        if not module_quiet:
+            print(
+                "script '{}' - Matrix Command: Invalid Command '{}'!".format(module_file, matrix_command))
+            print(
+                "script '{}' - Matrix Command: {}".format(module_file, str(command_list)))
+
+            module_res = 2
 
 
-if module_debug:
-    print("script '{}': Script finished with [{}]".format(
-        module_file, module_res))
+    if matrix_command == 'print':
+        # ------------------------
+        # Print the Version Check Result
+
+        if module_output == 'plain':
+            if len(matrix_result['matrix']['rust-versions']) > 0:
+                print("script '{}' - Rust Versions:".format(module_file))
+                print("\n".join(matrix_result['matrix']['rust-versions']))
+            else:
+                print(
+                    "script '{}' - Rust Versions: no versions registered".format(module_file))
+
+        elif module_output == 'json':
+            print(
+                "{}".format(
+                    json.dumps(
+                        matrix_result['matrix']['rust-versions'])))
+
+        else:
+            print("script '{}' - Rust Versions:\n{}".format(module_file,
+                                                            str(matrix_result['matrix']['rust-versions'])))
+
+    elif matrix_command == 'check':
+        # ------------------------
+        # Fetch the Git Tag list
+
+        repo = Repo('.git')
+        git = repo.git
+
+        tags_result = git_fetch_tags(module_file, repo, module_debug, module_quiet)
+
+        if module_debug:
+            print(
+                "script '{}' - Tags Result:\n{}".format(module_file, str(tags_result)))
+
+        if not tags_result['success']:
+            if not module_quiet:
+                print(
+                    "script '{}' - Git Tag list: Listing Tags has failed!".format(module_file),
+                    file=sys.stderr)
+
+            module_res = 1
+
+        # ------------------------
+        # Check for missing Versions
+
+        requested_versions = check_version_tags(
+            tags_result['tags'], matrix_result['matrix'])
+
+        if module_debug:
+            print("script '{}' - Requested Versions:\n{}".format(module_file,
+                                                                 str(requested_versions)))
+
+        # ------------------------
+        # Print the Version Check Result
+
+        if module_output == 'plain':
+            if len(requested_versions) > 0:
+                print("script '{}' - Requested Versions:".format(module_file))
+                print("\n".join(requested_versions))
+            else:
+                print(
+                    "script '{}' - Requested Versions: All versions built".format(module_file))
+
+        elif module_output == 'json':
+            print("{}".format(json.dumps(requested_versions)))
+
+        else:
+            print("script '{}' - Requested Versions:\n{}".format(module_file,
+                                                                 str(requested_versions)))
+
+    elif matrix_command == 'save':
+        if matrix_result['matrix'] is None:
+            matrix_result['matrix'] = {}
+
+        if 'rust-versions' not in matrix_result['matrix']:
+            matrix_result['matrix']['rust-versions'] = []
+
+        added_count = 0
+        for version in save_versions:
+            if version not in matrix_result['matrix']['rust-versions']:
+                matrix_result['matrix']['rust-versions'].append(version)
+                added_count += 1
+
+        if added_count > 0:
+            matrix_result['matrix']['rust-versions'].sort()
+
+            save_result = save_version_matrix(
+                module_file,
+                matrix_file,
+                matrix_result['matrix'],
+                module_debug,
+                module_quiet)
+
+        # ------------------------
+        # Print the Version Save Result
+
+        if module_output == 'plain':
+            if added_count > 0:
+                if save_result:
+                    print(
+                        "script '{}' - Save Versions: '{}' versions added and saved correctly".format(module_file, added_count))
+                else:
+                    print(
+                        "script '{}' - Save Versions: Versions could not be saved!".format(module_file))
+
+            else:
+                print(
+                        "script '{}' - Save Versions: '{}' versions added".format(module_file, added_count))
+
+        elif module_output == 'json':
+            print("{}".format(json.dumps(save_result)))
+
+        else:
+            print("script '{}' - Save Versions: {}".format(module_file,
+                                                           str(save_result)))
 
 
-sys.exit(module_res)
+    if module_debug:
+        print("script '{}': Script finished with [{}]".format(
+            module_file, module_res))
+
+
+    sys.exit(module_res)
