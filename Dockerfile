@@ -53,7 +53,15 @@ RUN if [ -n "$RUST_VERSION" ]; then\
   ${HOME}/.cargo/bin/rustup default $RUST_VERSION ;\
 	${HOME}/.cargo/bin/rustup toolchain uninstall stable ;\
   echo "* Rust Compiler Version:" && ${HOME}/.cargo/bin/rustc --version ;\
-  echo "* RustUp Show:" && ${HOME}/.cargo/bin/rustup show ;\
-  fi
+  else \
+  rust_version_info=`${HOME}/.cargo/bin/rustc --version`\
+  RUST_VERSION=`echo "$rust_version_info" | awk '{print $2}'`\
+  echo "* Rust Compiler Version:" ${RUST_VERSION} ;\
+  export RUST_VERSION=${RUST_VERSION} ;\
+  fi ;\
+  echo "* RustUp Show:" && ${HOME}/.cargo/bin/rustup show
+
+# Label the image with the Rust Compiler Version
+LABEL org.opencontainers.image.version "$RUST_VERSION"
 
 WORKDIR /home/rust-build/project/
